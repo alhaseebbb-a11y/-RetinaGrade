@@ -1,0 +1,37 @@
+# ── Full dataset (too large for GitHub) ──────────────────────────────────────
+split_dataset/
+
+# ── Python cache ──────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# ── Jupyter checkpoints ───────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# ── ML model files (large) ────────────────────────────────────────────────────
+*.h5
+*.pb
+*.ckpt
+*.pt
+*.pth
+saved_model/
+efficientnet_b3_output/
+
+# ── OS / Editor ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# ── Environment ───────────────────────────────────────────────────────────────
+.env
+venv/
+env/
+*.egg-info/
+dist/
+build/
