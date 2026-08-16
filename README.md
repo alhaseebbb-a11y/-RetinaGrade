@@ -6,7 +6,7 @@
 ![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-orange?logo=tensorflow&logoColor=white)
 ![Colab](https://img.shields.io/badge/Google%20Colab-GPU-yellow?logo=googlecolab&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Status](https://img.shields.io/badge/Status-Training%20In%20Progress-blue)
+![Status](https://img.shields.io/badge/Status-Training%20Complete-brightgreen)
 
 **A deep learning pipeline for automated detection and severity grading of Diabetic Retinopathy using EfficientNet-B3 transfer learning.**
 
@@ -23,8 +23,11 @@
 - [Project Structure](#-project-structure)
 - [Notebooks](#-notebooks)
 - [Training Pipeline (Google Colab)](#-training-pipeline-google-colab)
-- [Results](#-results-to-be-updated-after-training)
+- [Results](#-results)
 - [How to Run](#-how-to-run)
+- [Web App (React + FastAPI)](#-web-app-react--fastapi)
+- [Standalone Pipeline](#-standalone-pipeline-scripts-no-colab)
+- [HPC Notes](HPC.md)
 - [Requirements](#-requirements)
 
 ---
@@ -56,12 +59,14 @@ Diabetic Retinopathy (DR) is a leading cause of preventable blindness worldwide.
 
 ### Full Dataset (used for training — not included in repo due to size)
 
+Preprocessed with `preprocess.py` (largest-connected-component circular crop → 300×300) into `split_dataset_cropped/`. 15 all-black corrupt images were detected and removed (logged in `corrupt_black_images.txt`).
+
 | Split | Class 0 | Class 1 | Class 2 | Class 3 | Class 4 | **Total** |
 |-------|---------|---------|---------|---------|---------|-----------|
-| Train | 5,968 | 5,968 | 5,968 | 5,968 | 5,968 | **29,840** |
-| Val | 1,520 | 1,305 | 1,399 | 1,278 | 1,294 | **6,796** |
-| Test | 2,650 | 1,430 | 1,965 | 1,280 | 1,366 | **8,691** |
-| **Total** | | | | | | **45,327** |
+| Train | 5,967 | 5,966 | 5,966 | 5,968 | 5,964 | **29,831** |
+| Val | 1,520 | 1,304 | 1,399 | 1,278 | 1,294 | **6,795** |
+| Test | 2,650 | 1,430 | 1,962 | 1,280 | 1,364 | **8,686** |
+| **Total** | | | | | | **45,312** |
 
 - **Training split is perfectly balanced** — 5,968 samples per class (augmented/oversampled during preprocessing)
 - Images stored as RGB JPEG/PNG, resized to **300×300** during loading
@@ -111,8 +116,15 @@ Dense(256, ReLU) + BatchNormalization
 Dropout(0.3)
         │
         ▼
-Dense(5, Softmax)           → DR grade probabilities
+Dense(4, sigmoid)           → CORAL ordinal logits → cumulative probabilities → grade
 ```
+
+> **Ordinal head (CORAL).** DR grades are ordinal (0 < 1 < 2 < 3 < 4). Instead of a plain
+> softmax, the head learns `K−1 = 4` thresholds; probabilities are derived from cumulative
+> sigmoids, which naturally discourages off-by-many misclassifications. The final logits
+> layer is kept in `float32` (and the full model is trained in `float32`) because fp16
+> logits/activations were found to overflow to `inf` during fine-tuning, which dynamic loss
+> scaling cannot recover from (see `HPC.md`).
 
 ### Two-Phase Training Strategy
 
@@ -132,6 +144,14 @@ Dense(5, Softmax)           → DR grade probabilities
 ├── 04_EfficientNet-B3_Transfer_Learning.ipynb   # Initial model experiments
 ├── 05_EfficientNetB3_Colab_Training_Pipeline.ipynb  # ✅ MAIN: Full Colab pipeline
 │
+├── preprocess.py                   # Full-data pipeline: quality filter + circular crop → split_dataset_cropped/
+├── train.py                        # Standalone multi-GPU training (CORAL ordinal, 2-phase, fp16/fp32)
+├── evaluate.py                     # Test-set evaluation with TTA + full metrics/plots
+├── ordinal.py                      # CORAL loss, ordinal accuracy, QWK callback
+├── run_train.sh                    # Launch train.py in a detached tmux session
+├── setenv.sh                       # venv + NVIDIA/CUDA library setup
+├── requirements.txt
+│
 ├── sample_dataset/                              # 40 sample images (8 per class)
 │   ├── 0/    # No DR
 │   ├── 1/    # Mild
@@ -142,8 +162,9 @@ Dense(5, Softmax)           → DR grade probabilities
 └── README.md
 ```
 
-> **Note:** The full `split_dataset/` (45,327 images, ~several GB) is excluded from this repo.  
-> Upload it to Google Drive and point `DATASET_ROOT` in the config cell to its path.
+> **Note:** The full `split_dataset_cropped/` (45,312 images, ~several GB) is excluded from this repo.
+> Upload it to Google Drive and point `DATASET_ROOT` in the config cell to its path, or re-run
+> `preprocess.py` locally on the raw data.
 
 ---
 
@@ -211,26 +232,44 @@ After training, these files are saved to Google Drive (`/efficientnet_b3_output/
 
 ---
 
-## 📈 Results *(to be updated after training)*
+## 📈 Results
 
-> **Training is currently in progress on Google Colab T4 GPU.**  
-> This section will be updated with actual evaluation metrics after the run completes.
+> **Final model:** EfficientNet-B3, CORAL ordinal head, two-phase transfer learning,
+> trained on 2× Tesla V100-16GB (fp32, batch 8/replica), resumed from an fp16 checkpoint,
+> evaluated with test-time augmentation (TTA).
 
 | Metric | Value |
 |--------|-------|
-| Test Accuracy | `—` |
-| Macro Precision | `—` |
-| Macro Recall | `—` |
-| Macro F1-Score | `—` |
-| Weighted F1 | `—` |
-| Best Val Accuracy | `—` |
-| Most Confused Classes | `—` |
+| **Test Accuracy** | **0.7026** |
+| **Quadratic Weighted Kappa (QWK)** | **0.8718** |
+| Macro Precision | 0.7045 |
+| Macro Recall | 0.7061 |
+| Macro F1-Score | 0.7008 |
+| Weighted F1 | 0.7072 |
+| Best Val QWK (during training) | 0.8710 |
 
-### Confusion Matrix
-*To be added after training*
+### Per-Class Metrics (test set)
 
-### Training Curves
-*To be added after training*
+| Class | Precision | Recall | F1 |
+|-------|-----------|--------|-----|
+| 0 — No DR | 0.854 | 0.752 | 0.800 |
+| 1 — Mild | 0.513 | 0.689 | 0.588 |
+| 2 — Moderate | 0.626 | 0.566 | 0.594 |
+| 3 — Severe | 0.677 | 0.759 | 0.715 |
+| 4 — Proliferative | 0.853 | 0.765 | 0.806 |
+
+Class 0 and 4 (the endpoints) are easiest; the mid grades (1–3) remain hardest, with most
+confusion between adjacent grades — expected for ordinal DR grading (e.g. No DR → Mild:
+492, Moderate → Mild: 406, Moderate → Severe: 229).
+
+### Generated Artifacts
+
+| File | Description |
+|------|-------------|
+| `confusion_matrix.png` | Count + row-normalised confusion matrix |
+| `per_class_metrics.png` | Precision / Recall / F1 bar charts |
+| `error_analysis.png` | Per-class error breakdown |
+| `test_metrics.json` | All metrics as machine-readable JSON |
 
 ---
 
@@ -283,6 +322,76 @@ result = predict("path/to/fundus_image.jpg")
 print(result)
 # → {'grade': '2', 'confidence': '87.34%', 'all_probs': {...}}
 ```
+
+---
+
+## 🖥️ Standalone Pipeline (scripts, no Colab)
+
+The same pipeline is available as plain scripts for a local multi-GPU machine:
+
+```bash
+# 1. Preprocess the raw images (circular crop, resize, de-black detection)
+python preprocess.py --data-root /path/to/raw --output-dir split_dataset_cropped
+
+# 2. Train (2 GPUs, fp32; drop --mixed-precision for fp16 — see HPC.md for the fp16 caveat)
+./run_train.sh --data-root split_dataset_cropped --output-dir outputs --batch-size 8 --cache
+tmux attach -t drgrade          # watch the run
+
+# 3. Evaluate the best checkpoint on the test set (TTA on)
+python evaluate.py --data-root split_dataset_cropped --model outputs/best_model.keras --output-dir outputs
+```
+
+- Multi-GPU via `tf.distribute.MirroredStrategy` with explicit per-replica dataset
+  sharding (TF 2.16 does not auto-shard `image_dataset_from_directory` pipelines).
+- Phase 1 trains the head only (LR 1e-3, ≤20 epochs); Phase 2 fine-tunes the top layers
+  (LR 1e-5, ≤30 epochs) with BatchNorm frozen.
+- Checkpoints + early stopping track **val QWK**. Resume a failed run with
+  `--resume outputs/best_model.keras` to skip Phase 1.
+- Operational notes, timings, and the fp16-vs-fp32 stability findings: [`HPC.md`](HPC.md).
+
+---
+
+## 🌐 Web App (React + FastAPI)
+
+A polished, animated clinical UI for grading fundus images with the trained model.
+
+```
+frontend/   Vite + React + TypeScript + Tailwind v4 + Motion + lucide-react
+backend/    FastAPI service that loads best_model.keras and serves /api/*
+```
+
+**Features**
+- Drag-and-drop upload with live image preview (JPEG/PNG/WEBP, ≤10 MB)
+- Instant real prediction: severity grade badge, animated confidence counter, per-class probability bars
+- Test-time augmentation toggle (average 4 flips for stability)
+- Model performance dashboard (test QWK 0.8718, accuracy, per-class F1 from `outputs/test_metrics.json`)
+- Export report: browser print-to-PDF layout + JSON download
+- Animated micro-interactions throughout (Motion), light clinical design system
+
+**Run it (2 terminals)**
+
+```bash
+# Terminal 1 — model backend on :8002 (GPU; add CUDA_VISIBLE_DEVICES=1 to pin a card)
+./run_backend.sh
+
+# Terminal 2 — frontend dev server on http://localhost:5174
+./run_frontend.sh
+```
+
+Open http://localhost:5174, drop in a fundus image, and hit **Analyze image**.
+(Dev proxy: Vite forwards `/api/*` → `localhost:8002`, so no CORS config needed locally.
+The backend defaults to GPU 0 — use `CUDA_VISIBLE_DEVICES=1 ./run_backend.sh` if GPU 0 is busy.)
+
+### API
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/health` | GET | Model loaded? + device/meta |
+| `/api/metrics` | GET | Test-set metrics for the dashboard |
+| `/api/predict?tta=true` | POST | Multipart `file` upload → `{grade, grade_name, confidence, probs, …}` |
+
+The prediction math (`threshold_probs` → `thresholds_to_class_probs` → grade) is exactly the
+code used in `evaluate.py`, so the web result matches the offline test-set evaluation.
 
 ---
 

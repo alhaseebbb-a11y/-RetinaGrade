@@ -1,5 +1,18 @@
 # ── Full dataset (too large for GitHub) ──────────────────────────────────────
 split_dataset/
+split_dataset_cropped/
+smoke_dataset/
+
+# ── Training / eval artifacts (large & reproducible) ─────────────────────────
+outputs/*
+!outputs/test_metrics.json
+train.log
+backend.log
+frontend.log
+
+# ── Frontend ─────────────────────────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
 
 # ── Python cache ──────────────────────────────────────────────────────────────
 __pycache__/
@@ -30,6 +43,7 @@ desktop.ini
 
 # ── Environment ───────────────────────────────────────────────────────────────
 .env
+.venv/
 venv/
 env/
 *.egg-info/

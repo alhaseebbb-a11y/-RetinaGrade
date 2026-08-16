@@ -1,0 +1,10 @@
+# DR-Grade backend — Render (CPU-only) requirements.
+# Use Python 3.11 in the Render dashboard. tensorflow-cpu replaces the CUDA
+# bundle used on the HPC box (Render servers have no GPU).
+tensorflow-cpu==2.16.1
+fastapi>=0.111
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9
+pillow>=10.0
+numpy==1.26.4
+h5py==3.14.0

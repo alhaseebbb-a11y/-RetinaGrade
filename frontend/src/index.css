@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  /* Clinical light palette */
+  --color-clinical-50: #f4f8fb;
+  --color-clinical-100: #e6f0f7;
+  --color-clinical-200: #c9dfec;
+  --color-clinical-300: #a2c6de;
+  --color-clinical-400: #6ea4c9;
+  --color-clinical-500: #4a87b5;
+  --color-clinical-600: #3a6f9a;
+  --color-clinical-700: #325c7d;
+  --color-clinical-800: #2d4d68;
+  --color-clinical-900: #294257;
+
+  --color-accent-400: #14b8a6;
+  --color-accent-500: #0d9488;
+  --color-accent-600: #0f766e;
+
+  --color-slate-mist: #f7fafc;
+
+  --shadow-soft: 0 10px 40px -12px rgb(15 118 110 / 0.18);
+  --shadow-card: 0 4px 24px -6px rgb(15 23 42 / 0.08);
+  --shadow-glow: 0 0 0 4px rgb(20 184 166 / 0.12);
+
+  --animate-shimmer: shimmer 1.8s linear infinite;
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-glow-pulse: glowPulse 3.5s ease-in-out infinite;
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-14px) scale(1.04); }
+  }
+  @keyframes glowPulse {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 1; }
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-slate-mist);
+  color: var(--color-clinical-900);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Decorative page background */
+.bg-aurora {
+  background:
+    radial-gradient(60rem 40rem at 110% -10%, rgb(20 184 166 / 0.10), transparent 60%),
+    radial-gradient(50rem 36rem at -10% 0%, rgb(74 135 181 / 0.12), transparent 55%),
+    radial-gradient(44rem 34rem at 50% 120%, rgb(20 184 166 / 0.08), transparent 60%),
+    var(--color-slate-mist);
+}
+
+/* Thin elegant scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--color-clinical-200);
+  border-radius: 999px;
+  border: 2px solid var(--color-slate-mist);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--color-clinical-300); }
+
+/* Upload dropzone active state */
+.dropzone-active {
+  border-color: var(--color-accent-500) !important;
+  background: rgb(20 184 166 / 0.06) !important;
+  box-shadow: var(--shadow-glow);
+}
+
+/* Skeleton shimmer bar */
+.skeleton {
+  background: linear-gradient(90deg, var(--color-clinical-100) 25%, var(--color-clinical-50) 50%, var(--color-clinical-100) 75%);
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+/* Print styles: report export via browser print-to-PDF */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white !important; }
+  .print-block { box-shadow: none !important; border: 1px solid #e5e7eb; break-inside: avoid; }
+}

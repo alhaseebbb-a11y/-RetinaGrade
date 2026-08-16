@@ -1,0 +1,15 @@
+split_dataset_cropped/test/2/16349_left-600.jpg
+split_dataset_cropped/test/2/27096_right-600.jpg
+split_dataset_cropped/test/2/28544_left-600.jpg
+split_dataset_cropped/test/4/22595_left-600-FA.jpg
+split_dataset_cropped/test/4/32230_right-600-FA.jpg
+split_dataset_cropped/train/0/20347_right-600.jpg
+split_dataset_cropped/train/1/10600_right-600-FA.jpg
+split_dataset_cropped/train/1/18972_left-600-FA.jpg
+split_dataset_cropped/train/2/22533_right-600.jpg
+split_dataset_cropped/train/2/3829_left-600.jpg
+split_dataset_cropped/train/4/16802_right-600-FA.jpg
+split_dataset_cropped/train/4/17157_left-600-FA.jpg
+split_dataset_cropped/train/4/17157_left-600.jpg
+split_dataset_cropped/train/4/24472_right-600-FA.jpg
+split_dataset_cropped/val/1/11538_right-600.jpg
