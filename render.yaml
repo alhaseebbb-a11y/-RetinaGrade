@@ -1,0 +1,18 @@
+# Render Blueprint — one-click deploy of the DR-Grade backend.
+# Deploy: render.com → New+ → Blueprint → select the -RetinaGrade repo → Apply.
+# The service downloads the Keras model from MODEL_URL (Hugging Face) at startup.
+services:
+  - type: web
+    name: dr-grade-backend
+    runtime: python
+    rootDir: backend
+    region: singapore
+    plan: free
+    buildCommand: pip install -r requirements-render.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: MODEL_URL
+        value: https://huggingface.co/alhaseebbb/dr-grade-model/resolve/main/best_model.keras
+      - key: BACKEND_DEVICE
+        value: cpu
