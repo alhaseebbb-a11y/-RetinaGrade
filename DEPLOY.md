@@ -132,7 +132,7 @@ When it goes live, open the Vercel URL (`https://<your-project>.vercel.app`):
 | Frontend shows **AI not connected** | Check `VITE_API_BASE` on Vercel, and that `/api/health` works in a browser. |
 | Browser shows CORS error | Vercel domain must end in `.vercel.app`. If you add a custom domain, add it to `allow_origins` in `backend/app.py`. |
 | First prediction is very slow | Free-tier Render sleeps after ~15 min. Just wait — subsequent calls are fast. |
-| Render deploy fails with `pip` error | Confirm Build Command is `pip install -r requirements-render.txt` (not the CUDA `requirements.txt`). |
+| Render deploy fails with `pip` error | Confirm Build Command is `pip install -r requirements-render.txt` (not the CUDA `requirements-train.txt`). |
 | Memory errors on Render | Upgrade to Starter, or convert the model to TFLite. |
 
 ## Updating after retraining

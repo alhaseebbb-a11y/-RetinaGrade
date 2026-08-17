@@ -150,7 +150,8 @@ Dense(4, sigmoid)           → CORAL ordinal logits → cumulative probabilitie
 ├── ordinal.py                      # CORAL loss, ordinal accuracy, QWK callback
 ├── run_train.sh                    # Launch train.py in a detached tmux session
 ├── setenv.sh                       # venv + NVIDIA/CUDA library setup
-├── requirements.txt
+├── requirements.txt                  # Streamlit Cloud dependencies (CPU)
+├── requirements-train.txt            # HPC training dependencies (GPU + CUDA)
 │
 ├── sample_dataset/                              # 40 sample images (8 per class)
 │   ├── 0/    # No DR

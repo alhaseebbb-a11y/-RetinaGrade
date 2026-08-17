@@ -1,7 +1,6 @@
-# Diabetic Retinopathy DR-Grade — HPC training pipeline requirements
-# TensorFlow with bundled CUDA 12.3 libs (works with the 550+ driver / CUDA 13 driver on this box)
-tensorflow[and-cuda]==2.16.1
-scikit-learn==1.6.1
-seaborn==0.13.2
-matplotlib==3.9.4
+streamlit>=1.35,<1.40
+tensorflow-cpu==2.16.1
+numpy==1.26.4
+pillow>=10.0,<11
 h5py==3.14.0
+protobuf>=4.25,<5
