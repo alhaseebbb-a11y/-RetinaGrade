@@ -196,8 +196,7 @@ def main():
         )
 
         if uploaded is not None:
-            img = Image.open(io.BytesIO(uploaded.getvalue())).convert("RGB")
-            st.image(np.asarray(img), caption=uploaded.name, use_container_width=True)
+            st.image(uploaded.getvalue(), caption=uploaded.name, use_container_width=True)
 
         analyze = st.button(
             "🔬  Analyze image",
