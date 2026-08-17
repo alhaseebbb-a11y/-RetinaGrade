@@ -7,6 +7,7 @@ severity grade (No DR to Proliferative DR) with per-class confidence.
 Model: EfficientNet-B3 + CORAL ordinal head, hosted on Hugging Face.
 """
 
+import io
 import os
 import sys
 import time
@@ -76,7 +77,7 @@ def load_model():
 
 def preprocess_image(data: bytes) -> np.ndarray:
     """Decode uploaded bytes to a float32 numpy array sized for the model."""
-    img = Image.open(data).convert("RGB")
+    img = Image.open(io.BytesIO(data)).convert("RGB")
     img = img.resize((IMAGE_SIZE, IMAGE_SIZE), Image.BILINEAR)
     return np.asarray(img, dtype=np.float32)
 
@@ -195,8 +196,8 @@ def main():
         )
 
         if uploaded is not None:
-            img = Image.open(uploaded).convert("RGB")
-            st.image(img, caption=uploaded.name, use_container_width=True)
+            img = Image.open(io.BytesIO(uploaded.getvalue())).convert("RGB")
+            st.image(np.asarray(img), caption=uploaded.name, use_container_width=True)
 
         analyze = st.button(
             "🔬  Analyze image",
